@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class TaskMenu {
 
-    public static void taskMenu() {
+    public static void taskMenu() throws IOException {
 
         Scanner scan = new Scanner(System.in);
         String userInput;
@@ -32,32 +32,22 @@ public class TaskMenu {
     }
 
 
-    public static void switchCaseMenu(String userInput){
+    public static void switchCaseMenu(String userInput) throws IOException {
 
-        TaskFileHandler fileHandler = new TaskFileHandler()
+        TaskFileHandler fileHandler = new TaskFileHandler();
 
-        switch (userInput){
+        switch (userInput) {
             case "add":
-                try {
-                    String[][] tasks = fileHandler.readTasksFromFile("tasks.csv");
-                    TaskFileHandler.diplayTasks(tasks);
-                } catch (IOException e) {
-                    System.out.println(ConsoleColors.RED + "Error to open file " + e.getMessage() );
-                }
-                break;
-            case "remove":
-                String[][] tasks = null;
-                try {
-                    tasks = fileHandler.readTasksFromFile("tasks.csv");
-                } catch (IOException e) {
-                    System.out.println(ConsoleColors.RED + "Error to open file " + e.getMessage() );
-                }
-                // todo finish methode of user input to tasks
-                // String[] newTask = getTaskFromUser
-
+                TaskFileHandler.writeTasksToFile("tasks.csv");
                 break;
             case "list":
-                System.out.println("Wybrano list");
+                try {
+                    String[][] tasks = fileHandler.readTasksFromFile("tasks.csv");
+                    // Wyświetl zadania
+                    TaskFileHandler.displayTasks(tasks);
+                } catch (IOException e) {
+                    System.out.println("Błąd odczytu pliku");
+                }
                 break;
             case "exit":
                 System.out.println("Wyjście");
@@ -68,4 +58,6 @@ public class TaskMenu {
         }
 
     }
+
+}
 

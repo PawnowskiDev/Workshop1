@@ -7,9 +7,6 @@ import java.io.IOException;
 public class TaskMenager {
     public static void main(String[] args) throws IOException {
 
-
-        TaskMenu menu = new TaskMenu();
-
         TaskMenu.taskMenu();
 
     }

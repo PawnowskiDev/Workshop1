@@ -1,9 +1,6 @@
 package pl.coderslab;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
@@ -12,55 +9,69 @@ public class TaskFileHandler {
 
     public static String[][] readTasksFromFile(String filePath) throws IOException {
 
-        BufferedReader br = null;
-        String line;
-        String[][] tasks = null;
-
-        try {
-            br = new BufferedReader(new FileReader(filePath));
-            int numRows = 0;
-            while (br.readLine() != null) {
-                numRows++;
-            }
-            tasks = new String[numRows][];
-
-            br = new BufferedReader(new FileReader(filePath));
-            int row = 0;
-            while ((line = br.readLine()) != null) {
-                String[] fields = line.split(",");
-                tasks[row] = fields;
-                row++;
-            }
-        } finally {
-            if (br != null) {
-                br.close();
-            }
+        File file = new File(filePath);
+        FileReader fileReader = new FileReader(file);
+        Scanner scanFile = new Scanner(fileReader);
+        
+        int linesCount = 0;
+        while (scanFile.hasNextLine()) {
+            scanFile.nextLine();
+            linesCount++;
         }
+        scanFile.close();
+        
+        String[][] tasks = new String[linesCount][3];
+        
+        fileReader = new FileReader(file);
+        scanFile = new Scanner(fileReader);
+        
+        int lineIndex = 0;
+        
+        while (scanFile.hasNextLine()) {
+            String line = scanFile.nextLine();
+            String[] taskData = line.split(", ");
+            tasks[lineIndex] = taskData;
+            lineIndex++;
+        }
+        fileReader.close();
+        scanFile.nextLine();
+        scanFile.close();
+
+
         return tasks;
     }
 
     public static void writeTasksToFile(String filePath) throws IOException {
 
         Scanner scan = new Scanner(System.in);
-
         FileWriter writer = new FileWriter(filePath);
+        String ifContinue;
 
-        for (int i = 1; i<= 3; i++) {
+        do {
             System.out.println(ConsoleColors.YELLOW + "Please add task description");
-                String description = scan.nextLine();
-            System.out.println(ConsoleColors.YELLOW + "Please add task due date");
-                String dueDate = scan.nextLine();
-            System.out.println(ConsoleColors.YELLOW + "Is your task is important: true/false");
-                String isimportant = scan.nextLine();
+            String description = scan.nextLine();
 
-            String taskLine = String.format("%s, %s, %s\n" , description ,dueDate, isimportant);
+            System.out.println(ConsoleColors.YELLOW + "Please add task due date");
+            String dueDate = scan.nextLine();
+
+            System.out.println(ConsoleColors.YELLOW + "Is your task is important: true/false");
+            String isimportant = scan.nextLine();
+
+            String taskLine = String.format("%s, %s, %s\n", description, dueDate, isimportant);
             writer.write(taskLine);
 
-        }
+            System.out.println(ConsoleColors.YELLOW + "Do you want to add more tasks? (yes/no)");
+            ifContinue = scan.next();
+            scan.nextLine();
+        } while (ifContinue.equals("yes"));
+
         writer.close();
-        scan.close();
 
         System.out.println(ConsoleColors.GREEN + "Tasks have been written to the file");
+
+        scan.nextLine();
+        scan.close();
+
 
     }
 
@@ -103,6 +114,15 @@ public class TaskFileHandler {
 
         System.out.println(ConsoleColors.PURPLE + "Task has been removed");
 
+        System.out.println(ConsoleColors.PURPLE + "Task has been removed");
+
+        System.out.println(ConsoleColors.PURPLE + "Task list after removal");
+        System.out.println();
+        displayTasks((updatedTasks));
+
+        System.out.println("Press 'm' to return the menu");
+
+        scan.nextLine();
         scan.close();
     }
 

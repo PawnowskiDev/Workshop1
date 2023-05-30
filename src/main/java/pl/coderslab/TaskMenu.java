@@ -1,6 +1,7 @@
 package pl.coderslab;
 
-import java.io.IOException;
+import java.io.*;
+import java.util.List;
 import java.util.Scanner;
 
 public class TaskMenu {
@@ -14,8 +15,7 @@ public class TaskMenu {
             displayMenu();
             userInput = scan.nextLine();
             switchCaseMenu(userInput);
-
-        } while (!userInput.equals("exit"));
+        } while (!userInput.equalsIgnoreCase("exit"));
 
         scan.close();
     }
@@ -34,55 +34,46 @@ public class TaskMenu {
 
     public static void switchCaseMenu(String userInput) throws IOException {
 
-        TaskFileHandler fileHandler = new TaskFileHandler();
-        Scanner scan = new Scanner(System.in);
-
-
+            Scanner scanner = new Scanner(System.in);
 
         while (true) {
 
+            userInput = scanner.nextLine();
+
         switch (userInput) {
             case "add":
-
-                String[][] tasks = null;
-                try {
-                    TaskFileHandler.writeTasksToFile("tasks.csv");
-                } catch (IOException e) {
-                    System.out.println(ConsoleColors.RED + "An error occurred while writing tasks to the file" + e.getMessage());
-                    e.printStackTrace();
-                }
-                scan.nextLine();
-                switchCaseMenu(userInput);
+                TaskFileHandler.addTask();
                 break;
 
             case "remove":
-                try {
-                    TaskFileHandler.removeTasksFromFile("tasks.csv");
-                } catch (IOException e) {
-                    System.out.println(ConsoleColors.RED + "An error occurred while writing tasks to the file" + e.getMessage());
-
-                }
+                TaskFileHandler.removeTask();
                 break;
+
             case "list":
+                List<String[]> tasks = null;
                 try {
-                    tasks = fileHandler.readTasksFromFile("tasks.csv");
-                    TaskFileHandler.displayTasks(tasks);
+                    tasks = TaskFileHandler.readFromFile(TaskFileHandler.FILE_NAME);
+                    for (String[] task : tasks) {
+                        for (int i = 0; i < task.length; i++) {
+                            System.out.print(task[i] + ", ");
+                        }
+                        System.out.println();
+                    }
                 } catch (IOException e) {
-                    System.out.println(ConsoleColors.RED + "Can't open file" + ConsoleColors.RED + e.getMessage());
+                    e.printStackTrace();
                 }
                 break;
+
             case "exit":
-                System.out.println(ConsoleColors.PURPLE +  "Exit");
-                break;
+                System.out.println(ConsoleColors.PURPLE + "Exit");
+                return;
+
             default:
-                System.out.println("Wrong choice");
-                break;
+                System.out.println(ConsoleColors.PURPLE + "Please select a correct option.");
+                continue;
         }
 
-                    if(userInput.equalsIgnoreCase("exit")) {
-                            break;
-            }
         }
-
     }
 }
+

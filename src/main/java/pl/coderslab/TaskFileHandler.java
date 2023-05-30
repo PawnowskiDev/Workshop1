@@ -1,136 +1,85 @@
 package pl.coderslab;
 
 import java.io.*;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
 
 public class TaskFileHandler {
-    private static final String CSV_DELIMITER = ",";
 
-    public static String[][] readTasksFromFile(String filePath) throws IOException {
-
-        File file = new File(filePath);
-        FileReader fileReader = new FileReader(file);
-        Scanner scanFile = new Scanner(fileReader);
-        
-        int linesCount = 0;
-        while (scanFile.hasNextLine()) {
-            scanFile.nextLine();
-            linesCount++;
-        }
-        scanFile.close();
-        
-        String[][] tasks = new String[linesCount][3];
-        
-        fileReader = new FileReader(file);
-        scanFile = new Scanner(fileReader);
-        
-        int lineIndex = 0;
-        
-        while (scanFile.hasNextLine()) {
-            String line = scanFile.nextLine();
-            String[] taskData = line.split(", ");
-            tasks[lineIndex] = taskData;
-            lineIndex++;
-        }
-        fileReader.close();
-        scanFile.nextLine();
-        scanFile.close();
+    static final String FILE_NAME = "/home/pawnowdev/IdeaProjects/CodersLab/CodersLabJava/TaskMenager/src/main/resources/data/tasks.csv";
 
 
-        return tasks;
-    }
+    // metoda która będzie wczytywać oraz przekształcać na List<String> plik tekst.csv
 
-    public static void writeTasksToFile(String filePath) throws IOException {
+    public static List<String[]> readFromFile(String FILE_NAME) throws IOException {
 
-        Scanner scan = new Scanner(System.in);
-        FileWriter writer = new FileWriter(filePath);
-        String ifContinue;
+        List<String[]> taskList = new ArrayList<>();
 
-        do {
-            System.out.println(ConsoleColors.YELLOW + "Please add task description");
-            String description = scan.nextLine();
-
-            System.out.println(ConsoleColors.YELLOW + "Please add task due date");
-            String dueDate = scan.nextLine();
-
-            System.out.println(ConsoleColors.YELLOW + "Is your task is important: true/false");
-            String isimportant = scan.nextLine();
-
-            String taskLine = String.format("%s, %s, %s\n", description, dueDate, isimportant);
-            writer.write(taskLine);
-
-            System.out.println(ConsoleColors.YELLOW + "Do you want to add more tasks? (yes/no)");
-            ifContinue = scan.next();
-            scan.nextLine();
-        } while (ifContinue.equals("yes"));
-
-        writer.close();
-
-        System.out.println(ConsoleColors.GREEN + "Tasks have been written to the file");
-
-        scan.nextLine();
-        scan.close();
-
-
-    }
-
-    public static void removeTasksFromFile(String filePath) throws IOException {
-
-        String[][] tasks = readTasksFromFile(filePath);
-
-        System.out.println(ConsoleColors.PURPLE + "Tasks list: ");
-        for (int i = 0; i < tasks.length; i++) {
-            String[] task = tasks[i];
-            System.out.printf("%d. %s, %s, %s\n", i, task[0], task[1], task[2]);
-        }
-        Scanner scan = new Scanner(System.in);
-        System.out.println(ConsoleColors.PURPLE + "Insert number of tasks to remove");
-        int taskIndex;
-
-        try {
-            taskIndex = scan.nextInt();
-            scan.nextLine();
-        } catch (InputMismatchException e) {
-            System.out.println(ConsoleColors.RED + " Invalid Input. Expect a number");
-            scan.close();
-            return;
-        }
-
-        if (taskIndex < 0 || taskIndex >= tasks.length) {
-            System.out.println(ConsoleColors.RED + "Wrong number of task!");
-            scan.close();
-            return;
-        }
-        String[][] updatedTasks = new String[tasks.length - 1][3];
-        int index = 0;
-        for (int i = 0; i < tasks.length; i++) {
-            if (i != taskIndex) {
-                updatedTasks[index] = tasks[i];
-                index++;
+        try (BufferedReader br = new BufferedReader(new FileReader(FILE_NAME))) {
+            String line;
+            while((line = br.readLine()) != null) {
+                String[] values = line.split(", ");
+                taskList.add(values);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        writeTasksToFile(filePath);
+        return taskList;
+    }
 
-        System.out.println(ConsoleColors.PURPLE + "Task has been removed");
+    public static void addTask() {
 
-        System.out.println(ConsoleColors.PURPLE + "Task has been removed");
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Please add task description:");
+        String description = scanner.nextLine();
+        System.out.println("Please add task due date:");
+        String dueDate = scanner.nextLine();
+        System.out.println("Is your task important: true/false");
+        String isImportant = scanner.nextLine();
 
-        System.out.println(ConsoleColors.PURPLE + "Task list after removal");
-        System.out.println();
-        displayTasks((updatedTasks));
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
+            bw.write(description + ", " + dueDate + ", " + isImportant);
+            bw.newLine();
+            System.out.println(ConsoleColors.PURPLE + "Task added successfully.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-        System.out.println("Press 'm' to return the menu");
+    public static void removeTask() throws IOException {
 
+        List<String[]> tasks = TaskFileHandler.readFromFile(FILE_NAME);
+
+        System.out.println(ConsoleColors.PURPLE + "Current tasks: ");
+
+        for (int i = 0; i < tasks.size(); i++) {
+            System.out.print(i + ". ");
+            for (int j = 0; j < tasks.get(i).length; j++) {
+                System.out.print(tasks.get(i)[j] + ", ");
+            }
+            System.out.println();
+        }
+
+        System.out.println("Enter index to remove");
+        Scanner scan = new Scanner(System.in);
+        int index = scan.nextInt();
         scan.nextLine();
-        scan.close();
-    }
 
-    public static void displayTasks(String[][] tasks) {
-        for (int i = 0; i < tasks.length; i++) {
-            String[] task = tasks[i];
-            System.out.printf("%d. %s, %s, %s\n", i, task[0], task[1], task[2]);
+        if (index >= 0 && index <= tasks.size()) {
+            tasks.remove(index);
+            System.out.println(ConsoleColors.PURPLE + "Task removed successfully");
+
+            // zaktualizowanie listy do pliku
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(FILE_NAME, false))) {
+                for (String[] task : tasks) {
+                    bw.write(String.join(", ", task));
+                    bw.newLine();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println(ConsoleColors.RED + "Invalid index");
         }
-
     }
+
 }
